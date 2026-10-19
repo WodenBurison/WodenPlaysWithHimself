@@ -66,7 +66,7 @@ jobs:
       # filenames (including unpublished ones) and this log is public if the repo is.
       - name: Build Quartz (only notes with publish true)
         run: |
-          if npx quartz build -d vault > build.log 2>&1; then
+          if npx quartz build -d vault/Solo_TTRPG_Play_Vault > build.log 2>&1; then
             tail -n 3 build.log
           else
             echo "Build failed. Last lines of the log:"
