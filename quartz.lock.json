@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "plugins": {
+    "explicit-publish": {
+      "source": "github:quartz-community/explicit-publish",
+      "resolved": "https://github.com/quartz-community/explicit-publish.git",
+      "commit": "9d20adc96b1b1fc6a095e009092132b46d61aae1",
+      "installedAt": "2026-10-18T22:31:30.140Z"
+    },
+    "quartz-leaflet-bases-plugin": {
+      "source": "github:Requiae/quartz-leaflet-bases-plugin",
+      "resolved": "https://github.com/Requiae/quartz-leaflet-bases-plugin.git",
+      "commit": "48da13cf01ba6d742e616da2e837fd2a9478ac79",
+      "installedAt": "2026-10-18T22:25:59.981Z"
+    }
+  }
+}

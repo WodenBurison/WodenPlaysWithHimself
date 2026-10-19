@@ -1,0 +1,91 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Pushes to the private vault repo don't trigger this repo, so rebuild daily too.
+    - cron: "23 11 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out site (Quartz)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check out private vault
+        uses: actions/checkout@v6
+        with:
+          repository: WodenBurison/Solo_TTRPG_Play
+          ssh-key: ${{ secrets.VAULT_DEPLOY_KEY }}
+          path: vault
+          fetch-depth: 0 # full history so Quartz can read git dates
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache Quartz plugins
+        uses: actions/cache@v5
+        with:
+          path: .quartz/plugins
+          key: ${{ runner.os }}-plugins-${{ hashFiles('quartz.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-plugins-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Quartz plugins
+        run: npx quartz plugin install
+
+      # Build output is kept out of the log on success: warnings list note
+      # filenames (including unpublished ones) and this log is public if the repo is.
+      - name: Build Quartz (only notes with publish true)
+        run: |
+          if npx quartz build -d vault > build.log 2>&1; then
+            tail -n 3 build.log
+          else
+            echo "Build failed. Last lines of the log:"
+            tail -n 15 build.log
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

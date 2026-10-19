@@ -12,3 +12,8 @@ replit.nix
 .quartz/
 quartz/cli/tui/dist/
 .turbo/
+
+# Local vault link and CI checkout (the notes never live in this repo)
+/content
+/vault
+build.log
